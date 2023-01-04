@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:quizzler_flutter/quiz_brain.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 
 void main() {
   runApp(const MyApp());
@@ -29,12 +31,10 @@ class QuizPage extends StatefulWidget {
 }
 
 class _QuizPageState extends State<QuizPage> {
-  List<Icon> scoreKeeper = [
-    Icon(
-      Icons.check,
-      color: Colors.green,
-    )
-  ];
+
+  // Object of QuizBrain class which have most of the quiz Logic and all the stuff working behind
+  QuizBrain quizBrain = QuizBrain();
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -45,9 +45,11 @@ class _QuizPageState extends State<QuizPage> {
             padding: const EdgeInsets.all(10.0),
             child: Center(
               child: Text(
-                'This is where the question text will go.',
+
+                // Calling the getCurrentQuestion() to get the current question of the game
+                quizBrain.getCurrentQuestion(),
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 25.0,
                   color: Colors.white,
                 ),
@@ -58,7 +60,23 @@ class _QuizPageState extends State<QuizPage> {
         TextButton(
           style: ButtonStyle(
               backgroundColor: MaterialStateProperty.all(Colors.green)),
-          onPressed: () {},
+          onPressed: () {
+            setState(() {
+
+              // Checking if the Answer is correct or not
+              quizBrain.checkAnswer(true);
+            });
+
+            // Adding an alert when we reach at the End of the Question
+            if (quizBrain.quizCompleted()) {
+              Alert(
+                  context: context,
+                  title: "Quiz Finished",
+                  desc: 'Your Score is ${quizBrain.getScore()} ')
+                  .show();
+              quizBrain.resetQuiz();
+            }
+          },
           child: const Padding(
             padding: EdgeInsets.all(15.0),
             child: Text(
@@ -74,7 +92,23 @@ class _QuizPageState extends State<QuizPage> {
         TextButton(
           style: ButtonStyle(
               backgroundColor: MaterialStateProperty.all(Colors.red)),
-          onPressed: () {},
+          onPressed: () {
+            setState(() {
+
+              // Calling the checkAnswer function to check if the answer is correct
+              quizBrain.checkAnswer(false);
+            });
+
+            // showing an Alert if we just finished the last question of the Quiz
+            if (quizBrain.quizCompleted()) {
+              Alert(
+                  context: context,
+                  title: "Quiz Finished",
+                  desc: 'Your Score is ${quizBrain.getScore()} ')
+                  .show();
+              quizBrain.resetQuiz();
+            }
+          },
           child: const Padding(
             padding: EdgeInsets.all(16.0),
             child: Text(
@@ -86,11 +120,13 @@ class _QuizPageState extends State<QuizPage> {
             ),
           ),
         ),
-        SizedBox(
+        const SizedBox(
           height: 10.0,
         ),
         Row(
-          children: scoreKeeper,
+
+          // Getting the icons from the quizBrain class which have a function getIcons which returns icons List
+          children: quizBrain.getIcons(),
         )
       ],
     );
